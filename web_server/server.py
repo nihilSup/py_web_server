@@ -2,9 +2,12 @@
 import socket
 import os
 import mimetypes
+import logging
 
 from web_server.http import Request, Response
 from web_server.handlers import build_file_handler, method_not_allowed
+
+log = logging.getLogger(__name__)
 
 
 class HTTPServer(object):
@@ -26,11 +29,11 @@ class HTTPServer(object):
             s_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s_socket.bind((self.host, self.port))
             s_socket.listen(self.backlog)
-            print('Listening on {}:{}'.format(self.host, self.port))
+            log.info(f'Listening on {self.host}:{self.port}')
 
             while True:
                 c_socket, c_addr = s_socket.accept()
-                print('Received connection from', c_addr)
+                log.info(f'Received connection from {c_addr}')
                 self.handle_client(c_socket, c_addr)
 
     def handle_client(self, c_socket, c_addr):
@@ -38,31 +41,21 @@ class HTTPServer(object):
             try:
                 request = Request.from_socket(c_socket)
             except Exception:
-                print('Failed to parse request')
+                log.info('Failed to parse request')
                 Response('400 Bad Request', body='Bad Request').send(c_socket)
             else:
-                print('Received request', request)
+                log.info(f'Received request {request}')
                 for (path, meth), handler in self.req_handlers.items():
                     if request.path.startswith(path) and request.method == meth:
                         try:
                             response = handler(request)
                         except Exception as e:
-                            print(f'Error while processing {e}')
+                            log.exception(e)
                             response = Response('503 Internal Server Error')
                         finally:
                             break
                 else:
-                    print(f'No handlers for {path}')
+                    log.info(f'No handlers for {path}')
                     response = Response('404 Not found', body='Not Found')
-                print(f'Succesfully created {response}')
+                log.info(f'Succesfully created {response}')
                 response.send(c_socket)
-
-
-if __name__ == '__main__':
-    server = HTTPServer('localhost', 9997)
-    document_root = os.path.abspath('./tests/www')
-    server.add_handler('/', 'GET', build_file_handler(document_root))
-    server.add_handler('/', 'HEAD', build_file_handler(document_root))
-    server.add_handler('/', 'POST', method_not_allowed)
-    server.add_handler('/', 'PUT', method_not_allowed)
-    server.serve_forever()
