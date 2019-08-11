@@ -98,11 +98,10 @@ class Response(object):
         self.status = status
         self.headers = headers or Headers()
         if body:
-            if not isinstance(body, io.BytesIO):
+            if not isinstance(body, io.IOBase):
                 self.body = io.BytesIO(body.encode())
             else:
                 self.body = body
-            self.headers.add('content-length', len(body))
         else:
             self.body = None
 
@@ -114,4 +113,5 @@ class Response(object):
         )
         socket.sendall(msg.encode())
         if self.body:
-            socket.sendfile(body)
+            socket.sendfile(self.body)
+            self.body.close()

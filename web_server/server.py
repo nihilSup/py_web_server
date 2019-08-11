@@ -1,7 +1,10 @@
 """Server implementation"""
 import socket
+import os
+import mimetypes
 
-from web_server.http import Request
+from web_server.http import Request, Response
+from web_server.handlers import build_file_handler
 
 
 class HTTPServer(object):
@@ -9,13 +12,15 @@ class HTTPServer(object):
     Implementation of basic http server
     """
 
-    LINE_MAX_SIZE = 10*1024
-
-    def __init__(self, host, port, document_root, backlog=5):
+    def __init__(self, host, port, backlog=5):
         self.host = host
         self.port = port
-        self.document_root = document_root
+        self.req_handlers = {}
         self.backlog = backlog
+        print(f'Initialized server on {self.host}:{self.port}')
+
+    def add_handler(self, path, handler):
+        self.req_handlers[path] = handler
 
     def serve_forever(self):
         with socket.socket() as s_socket:
@@ -31,10 +36,30 @@ class HTTPServer(object):
 
     def handle_client(self, c_socket, c_addr):
         with c_socket:
-            request = Request.from_socket(c_socket)
-            print('Received request', request)
+            try:
+                request = Request.from_socket(c_socket)
+            except Exception:
+                print('Failed to parse request')
+                Response('400 Bad Request', body='Bad Request').send(c_socket)
+            else:
+                print('Received request', request)
+                for path, handler in self.req_handlers.items():
+                    if request.path.startswith(path):
+                        try:
+                            response = handler(request)
+                        except Exception as e:
+                            print(f'Error while processing {e}')
+                            response = Response('503 Internal Server Error')
+                        finally:
+                            break
+                else:
+                    print(f'No handlers for {path}')
+                    response = Response('404 Not found', body='Not Found')
+                response.send(c_socket)
 
 
 if __name__ == '__main__':
     server = HTTPServer('localhost', 9997)
+    document_root = os.path.abspath('./')
+    server.add_handler('/', build_file_handler(document_root))
     server.serve_forever()
