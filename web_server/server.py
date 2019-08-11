@@ -1,7 +1,7 @@
 """Server implementation"""
 import socket
 
-from web_server.request import Request
+from web_server.http import Request
 
 
 class HTTPServer(object):
@@ -11,9 +11,10 @@ class HTTPServer(object):
 
     LINE_MAX_SIZE = 10*1024
 
-    def __init__(self, host, port, backlog=5):
+    def __init__(self, host, port, document_root, backlog=5):
         self.host = host
         self.port = port
+        self.document_root = document_root
         self.backlog = backlog
 
     def serve_forever(self):
@@ -30,16 +31,8 @@ class HTTPServer(object):
 
     def handle_client(self, c_socket, c_addr):
         with c_socket:
-            # c_socket.send(b'Hello there %s' % bytes(c_addr[0], 'UTF-8'))
-            request = Request.from_lines(self._to_lines(c_socket))
-
-    def _to_lines(self, sock):
-        with sock.makefile('rb') as rb_file:
-            while True:
-                line = rb_file.readline(LINE_MAX_SIZE)
-                if len(line) >= self.LINE_MAX_SIZE:
-                    raise ValueError('Too long request line')
-                yield line
+            request = Request.from_socket(c_socket)
+            print('Received request', request)
 
 
 if __name__ == '__main__':
