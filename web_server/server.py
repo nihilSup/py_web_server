@@ -4,7 +4,7 @@ import os
 import mimetypes
 
 from web_server.http import Request, Response
-from web_server.handlers import build_file_handler
+from web_server.handlers import build_file_handler, method_not_allowed
 
 
 class HTTPServer(object):
@@ -17,10 +17,9 @@ class HTTPServer(object):
         self.port = port
         self.req_handlers = {}
         self.backlog = backlog
-        print(f'Initialized server on {self.host}:{self.port}')
 
-    def add_handler(self, path, handler):
-        self.req_handlers[path] = handler
+    def add_handler(self, path, meth, handler):
+        self.req_handlers[(path, meth)] = handler
 
     def serve_forever(self):
         with socket.socket() as s_socket:
@@ -43,8 +42,8 @@ class HTTPServer(object):
                 Response('400 Bad Request', body='Bad Request').send(c_socket)
             else:
                 print('Received request', request)
-                for path, handler in self.req_handlers.items():
-                    if request.path.startswith(path):
+                for (path, meth), handler in self.req_handlers.items():
+                    if request.path.startswith(path) and request.method == meth:
                         try:
                             response = handler(request)
                         except Exception as e:
@@ -55,11 +54,14 @@ class HTTPServer(object):
                 else:
                     print(f'No handlers for {path}')
                     response = Response('404 Not found', body='Not Found')
+                print(f'Succesfully created {response}')
                 response.send(c_socket)
 
 
 if __name__ == '__main__':
     server = HTTPServer('localhost', 9997)
-    document_root = os.path.abspath('./')
-    server.add_handler('/', build_file_handler(document_root))
+    document_root = os.path.abspath('./tests/www')
+    server.add_handler('/', 'GET', build_file_handler(document_root))
+    server.add_handler('/', 'POST', method_not_allowed)
+    server.add_handler('/', 'PUT', method_not_allowed)
     server.serve_forever()

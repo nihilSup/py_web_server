@@ -19,3 +19,7 @@ def build_file_handler(root_path):
         except FileNotFoundError:
             return Response('404 Not found', body='Not found')
     return file_handler
+
+
+def method_not_allowed(request):
+    return Response('405 Method Not Allowed', body='Method Not Allowed')
