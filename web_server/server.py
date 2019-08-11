@@ -62,6 +62,7 @@ if __name__ == '__main__':
     server = HTTPServer('localhost', 9997)
     document_root = os.path.abspath('./tests/www')
     server.add_handler('/', 'GET', build_file_handler(document_root))
+    server.add_handler('/', 'HEAD', build_file_handler(document_root))
     server.add_handler('/', 'POST', method_not_allowed)
     server.add_handler('/', 'PUT', method_not_allowed)
     server.serve_forever()
