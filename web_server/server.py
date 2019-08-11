@@ -4,7 +4,8 @@ import os
 import mimetypes
 import logging
 
-from web_server.http import Request, Response
+from web_server.http import (Request, Response, NOT_FOUND, BAD_REQUEST,
+                             INTERNAL_ERROR)
 from web_server.handlers import build_file_handler, method_not_allowed
 
 log = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ class HTTPServer(object):
                 request = Request.from_socket(c_socket)
             except Exception:
                 log.info('Failed to parse request')
-                Response('400 Bad Request', body='Bad Request').send(c_socket)
+                Response(BAD_REQUEST, body='Bad Request').send(c_socket)
             else:
                 log.info(f'Received request {request}')
                 for (path, meth), handler in self.req_handlers.items():
@@ -51,11 +52,11 @@ class HTTPServer(object):
                             response = handler(request)
                         except Exception as e:
                             log.exception(e)
-                            response = Response('503 Internal Server Error')
+                            response = Response(INTERNAL_ERROR)
                         finally:
                             break
                 else:
                     log.info(f'No handlers for {path}')
-                    response = Response('404 Not found', body='Not Found')
+                    response = Response(NOT_FOUND, body='Not Found')
                 log.info(f'Succesfully created {response}')
                 response.send(c_socket)

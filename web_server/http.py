@@ -117,3 +117,9 @@ class Response(object):
         return (f'{self.__class__.__name__}' +
                 f'(status={self.status}, headers={self.headers}, ' +
                 f'body={reprlib.repr(self.body)})')
+
+OK = '200 OK'
+NOT_FOUND = '404 Not Found'
+NOT_ALLOWED = '405 Method Not Allowed'
+INTERNAL_ERROR = '503 Internal Server Error'
+BAD_REQUEST = '400 Bad Request'
