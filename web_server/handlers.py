@@ -6,6 +6,9 @@ from web_server.http import Response
 
 
 def build_file_handler(root_path, server='otuserver'):
+    if root_path.startswith('.'):
+        root_path = os.path.abspath(root_path)
+
     def file_handler(request):
         path = os.path.join(root_path, request.path.lstrip('/'))
         if os.path.isdir(path):
