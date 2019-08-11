@@ -10,7 +10,6 @@ def build_file_handler(root_path, server='otuserver'):
         path = os.path.join(root_path, request.path.lstrip('/'))
         if os.path.isdir(path):
             path = os.path.join(path, 'index.html')
-        print(f'Path to open: {path}')
         try:
             f = open(path, 'rb')
             if request.method == 'GET':
