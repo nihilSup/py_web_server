@@ -29,7 +29,6 @@ class Headers(object):
     def from_lines(cls, lines):
         headers = cls()
         for line in it.islice(lines, cls.MAX_HEADERS_NUM):
-            print('bla', line)
             if line in (b'\r\n', b'\n', b''):
                 break
             line = line.decode('ASCII')
@@ -97,13 +96,9 @@ class Response(object):
     def __init__(self, status, headers=None, body=None):
         self.status = status
         self.headers = headers or Headers()
-        if body:
-            if not isinstance(body, io.IOBase):
-                self.body = io.BytesIO(body.encode())
-            else:
-                self.body = body
-        else:
-            self.body = None
+        if body and not isinstance(body, io.IOBase):
+            body = io.BytesIO(body.encode())
+        self.body = body
 
     def send(self, socket):
         msg = (
@@ -115,3 +110,6 @@ class Response(object):
         if self.body:
             socket.sendfile(self.body)
             self.body.close()
+
+    def __repr__(self):
+        return f'Response(status={self.status}, headers={self.headers}, body=...)'
