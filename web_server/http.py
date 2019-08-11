@@ -3,6 +3,7 @@ import typing
 from collections import defaultdict, namedtuple
 import itertools as it
 import io
+import reprlib
 
 
 class Headers(object):
@@ -91,6 +92,7 @@ class Request(typing.NamedTuple):
         return meth, path, vers
 
 
+# Probably refactor with dataclasses
 class Response(object):
 
     def __init__(self, status, headers=None, body=None):
@@ -112,4 +114,6 @@ class Response(object):
             self.body.close()
 
     def __repr__(self):
-        return f'Response(status={self.status}, headers={self.headers}, body=...)'
+        return (f'{self.__class__.__name__}' +
+                f'(status={self.status}, headers={self.headers}, ' +
+                f'body={reprlib.repr(self.body)})')
