@@ -37,9 +37,12 @@ class HTTPServer(object):
 
             with self.executor() as executor:
                 while True:
-                    c_socket, c_addr = s_socket.accept()
-                    log.info(f'Received connection from {c_addr}')
-                    executor.submit(self.handle_client, c_socket, c_addr)
+                    try:
+                        c_socket, c_addr = s_socket.accept()
+                        log.info(f'Received connection from {c_addr}')
+                        executor.submit(self.handle_client, c_socket, c_addr)
+                    except KeyboardInterrupt:
+                        break
 
     def handle_client(self, c_socket, c_addr):
         with c_socket:
