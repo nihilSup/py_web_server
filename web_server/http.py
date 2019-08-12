@@ -39,7 +39,6 @@ class Headers(object):
         for line in it.islice(lines, cls.MAX_HEADERS_NUM):
             if line in ('\r\n', '\n', ''):
                 break
-            # line = line.decode('ASCII')
             try:
                 name, _, value = line.partition(':')
             except ValueError:
@@ -79,7 +78,7 @@ class Request(typing.NamedTuple):
         line = rb_file.readline(cls.LINE_MAX_SIZE)
         if len(line) >= cls.LINE_MAX_SIZE:
             raise ValueError('Too long request line')
-        return urllib.parse.unquote(line.decode('ASCII'))
+        return line.decode('ASCII')
 
     @classmethod
     def from_socket(cls, socket):
@@ -97,6 +96,7 @@ class Request(typing.NamedTuple):
         req_line = line.rstrip('\r\n')
         try:
             meth, path_query, vers = req_line.split(' ')
+            path_query = urllib.parse.unquote(path_query)
             if '?' in path_query:
                 path, query = path_query.split('?')
             else:
