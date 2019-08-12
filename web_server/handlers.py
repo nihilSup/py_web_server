@@ -18,13 +18,8 @@ def build_file_handler(root_path, server='otuserver'):
             if request.method == 'GET':
                 r = http.Response(http.OK, body=f)
                 content_type, encoding = mimetypes.guess_type(path)
-                (r.headers.add('Date', formatdate(timeval=None,
-                                                  localtime=False,
-                                                  usegmt=True))
-                          .add('Server', server)
-                          .add('Content-Length', os.fstat(f.fileno()).st_size)
-                          .add('Content-Type', content_type)
-                          .add('Connection', 'close'))
+                (r.headers.add('Content-Length', os.fstat(f.fileno()).st_size)
+                          .add('Content-Type', content_type))
             elif request.method == 'HEAD':
                 f.close()
                 r = http.Response(http.OK, body=None)

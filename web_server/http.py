@@ -1,9 +1,10 @@
 """HTTP parsing helpers"""
 import typing
-from collections import defaultdict, namedtuple
 import itertools as it
 import io
 import reprlib
+from collections import defaultdict, namedtuple
+from email.utils import formatdate
 
 
 class Headers(object):
@@ -24,6 +25,11 @@ class Headers(object):
 
     def add(self, key, val):
         self._headers_dct[key].append(val)
+        return self
+
+    def add_if_none(self, key, val):
+        if key not in self:
+            self.add(key, val)
         return self
 
     @classmethod
@@ -48,6 +54,9 @@ class Headers(object):
         for name, values in self._headers_dct.items():
             for value in values:
                 yield name, value
+
+    def __contains__(self, key):
+        return key in self._headers_dct
 
     def __str__(self):
         return "".join(f"{name}: {value}\r\n" for name, value in self)
@@ -95,9 +104,14 @@ class Request(typing.NamedTuple):
 # Probably refactor with dataclasses
 class Response(object):
 
-    def __init__(self, status, headers=None, body=None):
+    def __init__(self, status, headers=None, body=None, server='otuserver'):
         self.status = status
         self.headers = headers or Headers()
+        (self.headers.add_if_none('Date', formatdate(timeval=None,
+                                                     localtime=False,
+                                                     usegmt=True))
+                     .add_if_none('Server', server)
+                     .add_if_none('Connection', 'close'))
         if body and not isinstance(body, io.IOBase):
             body = io.BytesIO(body.encode())
         self.body = body
