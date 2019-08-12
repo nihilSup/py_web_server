@@ -21,6 +21,10 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-h", "--host", type=str, default='localhost',
+                        help='hostname to listen')
+    parser.add_argument("-p", "--port", type=int, default=8080,
+                        help='tcp port to listen')
     parser.add_argument('-r', '--root', type=str,
                         default='./tests/integration',
                         help='path to DOCUMENT_ROOT')
@@ -28,8 +32,6 @@ def parse_args():
                         help='number of workers')
     parser.add_argument("-l", "--log", action="store", default=None,
                         help='path to log file')
-    parser.add_argument("-p", "--port", type=int, default=8080,
-                        help='tcp port to listen')
     return parser.parse_args()
 
 
