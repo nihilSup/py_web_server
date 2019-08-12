@@ -48,8 +48,9 @@ class HTTPServer(object):
         with c_socket:
             try:
                 request = Request.from_socket(c_socket)
-            except Exception:
+            except Exception as e:
                 log.info('Failed to parse request')
+                log.exception(e)
                 Response(BAD_REQUEST, body='Bad Request').send(c_socket)
             else:
                 log.info(f'Received request {request}')
