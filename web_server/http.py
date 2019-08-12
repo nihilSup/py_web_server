@@ -95,7 +95,8 @@ class Request(typing.NamedTuple):
             raise ValueError('Empty request line')
         req_line = line.decode('ASCII').rstrip('\r\n')
         try:
-            meth, path, vers = req_line.split(' ')
+            meth, path_query, vers = req_line.split(' ')
+            path, query = path_query.split('?')
         except ValueError:
             raise ValueError(f'Malformed request line: {req_line}')
         return meth, path, vers
