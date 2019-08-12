@@ -21,7 +21,7 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-h", "--host", type=str, default='localhost',
+    parser.add_argument("-s", "--host", type=str, default='localhost',
                         help='hostname to listen')
     parser.add_argument("-p", "--port", type=int, default=8080,
                         help='tcp port to listen')
