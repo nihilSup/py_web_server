@@ -3,6 +3,8 @@ import socket
 import os
 import mimetypes
 import logging
+import time
+from concurrent.futures import ThreadPoolExecutor
 
 from web_server.http import (Request, Response, NOT_FOUND, BAD_REQUEST,
                              INTERNAL_ERROR)
@@ -16,11 +18,12 @@ class HTTPServer(object):
     Implementation of basic http server
     """
 
-    def __init__(self, host, port, backlog=5):
+    def __init__(self, host, port, backlog=5, handlers=None, executor=None):
         self.host = host
         self.port = port
-        self.req_handlers = {}
         self.backlog = backlog
+        self.req_handlers = handlers or {}
+        self.executor = executor or ThreadPoolExecutor
 
     def add_handler(self, path, meth, handler):
         self.req_handlers[(path, meth)] = handler
@@ -32,10 +35,11 @@ class HTTPServer(object):
             s_socket.listen(self.backlog)
             log.info(f'Listening on {self.host}:{self.port}')
 
-            while True:
-                c_socket, c_addr = s_socket.accept()
-                log.info(f'Received connection from {c_addr}')
-                self.handle_client(c_socket, c_addr)
+            with self.executor() as executor:
+                while True:
+                    c_socket, c_addr = s_socket.accept()
+                    log.info(f'Received connection from {c_addr}')
+                    executor.submit(self.handle_client, c_socket, c_addr)
 
     def handle_client(self, c_socket, c_addr):
         with c_socket:
