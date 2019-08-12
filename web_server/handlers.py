@@ -11,6 +11,9 @@ def build_file_handler(root_path, server='otuserver'):
 
     def file_handler(request):
         path = os.path.join(root_path, request.path.lstrip('/'))
+        path = os.path.abspath(path)
+        if not path.startswith(root_path):
+            return http.Response(http.FORBIDDEN, body='Forbidden')
         if os.path.isdir(path):
             path = os.path.join(path, 'index.html')
         try:
