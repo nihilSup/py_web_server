@@ -3,6 +3,7 @@ import typing
 import itertools as it
 import io
 import reprlib
+import urllib.parse
 from collections import defaultdict, namedtuple
 from email.utils import formatdate
 
@@ -36,9 +37,9 @@ class Headers(object):
     def from_lines(cls, lines):
         headers = cls()
         for line in it.islice(lines, cls.MAX_HEADERS_NUM):
-            if line in (b'\r\n', b'\n', b''):
+            if line in ('\r\n', '\n', ''):
                 break
-            line = line.decode('ASCII')
+            # line = line.decode('ASCII')
             try:
                 name, _, value = line.partition(':')
             except ValueError:
@@ -78,7 +79,7 @@ class Request(typing.NamedTuple):
         line = rb_file.readline(cls.LINE_MAX_SIZE)
         if len(line) >= cls.LINE_MAX_SIZE:
             raise ValueError('Too long request line')
-        return line
+        return urllib.parse.unquote(line.decode('ASCII'))
 
     @classmethod
     def from_socket(cls, socket):
@@ -93,10 +94,13 @@ class Request(typing.NamedTuple):
     def _parse_request_line(cls, line):
         if not line:
             raise ValueError('Empty request line')
-        req_line = line.decode('ASCII').rstrip('\r\n')
+        req_line = line.rstrip('\r\n')
         try:
             meth, path_query, vers = req_line.split(' ')
-            path, query = path_query.split('?')
+            if '?' in path_query:
+                path, query = path_query.split('?')
+            else:
+                path = path_query
         except ValueError:
             raise ValueError(f'Malformed request line: {req_line}')
         return meth, path, vers
