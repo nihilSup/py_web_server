@@ -22,7 +22,7 @@ def main():
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', '--root', type=str,
-                        default='../http-test-suite-master/httptest/',
+                        default='./tests/integration',
                         help='path to DOCUMENT_ROOT')
     parser.add_argument('-w', '--workers', type=int, default=1,
                         help='number of workers')
