@@ -17,15 +17,17 @@ def build_file_handler(root_path, server='otuserver'):
         if os.path.isdir(path):
             path = os.path.join(path, 'index.html')
         try:
-            f = open(path, 'rb')
-            if request.method == 'GET':
-                r = http.Response(http.OK, body=f)
+            if request.method in {'GET', 'HEAD'}:
+                f = open(path, 'rb')
                 content_type, encoding = mimetypes.guess_type(path)
-                (r.headers.add('Content-Length', os.fstat(f.fileno()).st_size)
+                content_len = os.fstat(f.fileno()).st_size
+                if request.method == 'HEAD':
+                    f.close()
+                    r = http.Response(http.OK, body=None)
+                else:
+                    r = http.Response(http.OK, body=f)
+                (r.headers.add('Content-Length', content_len)
                           .add('Content-Type', content_type))
-            elif request.method == 'HEAD':
-                f.close()
-                r = http.Response(http.OK, body=None)
             else:
                 raise ValueError('Only GET/HEAD methods supported')
             return r
