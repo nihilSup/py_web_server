@@ -83,7 +83,7 @@ class HttpServer(unittest.TestCase):
         self.assertEqual(int(r.status), 200)
         self.assertEqual(int(length), 38)
         self.assertEqual(len(data), 38)
-        self.assertEqual(data, "<html><body>Page Sample</body></html>\n")
+        self.assertEqual(data, b"<html><body>Page Sample</body></html>\n")
 
     def test_file_with_spaces(self):
         """filename with spaces"""
@@ -94,7 +94,7 @@ class HttpServer(unittest.TestCase):
         self.assertEqual(int(r.status), 200)
         self.assertEqual(int(length), 19)
         self.assertEqual(len(data), 19)
-        self.assertEqual(data, "letters and spaces\n")
+        self.assertEqual(data, b"letters and spaces\n")
 
     def test_file_urlencoded(self):
         """urlencoded filename"""
@@ -105,7 +105,7 @@ class HttpServer(unittest.TestCase):
         self.assertEqual(int(r.status), 200)
         self.assertEqual(int(length), 38)
         self.assertEqual(len(data), 38)
-        self.assertEqual(data, "<html><body>Page Sample</body></html>\n")
+        self.assertEqual(data, b"<html><body>Page Sample</body></html>\n")
 
     def test_large_file(self):
         """large file downloaded correctly"""
@@ -116,7 +116,7 @@ class HttpServer(unittest.TestCase):
         self.assertEqual(int(r.status), 200)
         self.assertEqual(int(length), 954824)
         self.assertEqual(len(data), 954824)
-        self.assertIn("Wikimedia Foundation, Inc.", data)
+        self.assertIn(b"Wikimedia Foundation, Inc.", data)
 
     def test_document_root_escaping(self):
         """document root escaping forbidden"""
@@ -132,7 +132,7 @@ class HttpServer(unittest.TestCase):
         data = r.read()
         length = r.getheader("Content-Length")
         self.assertEqual(int(r.status), 200)
-        self.assertIn("hello", data)
+        self.assertIn(b"hello", data)
         self.assertEqual(int(length), 5)
 
     def test_post_method(self):
@@ -147,13 +147,13 @@ class HttpServer(unittest.TestCase):
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
-        s.send("HEAD /httptest/dir2/page.html HTTP/1.0\r\n\r\n")
+        s.send(b"HEAD /httptest/dir2/page.html HTTP/1.0\r\n\r\n")
         data = ""
         while 1:
             buf = s.recv(1024)
             if not buf:
                 break
-            data += buf
+            data += buf.decode('ASCII')
         s.close()
 
         self.assertTrue(data.find("\r\n\r\n") > 0, "no empty line with CRLF found")
@@ -161,7 +161,8 @@ class HttpServer(unittest.TestCase):
         headers = head.split("\r\n")
         self.assertTrue(len(headers) > 0, "no headers found")
         statusline = headers.pop(0)
-        (proto, code, status) = statusline.split(" ")
+        print('!!!!', statusline)
+        (proto, code, *status) = statusline.split(" ")
         h = {}
         for k, v in enumerate(headers):
             (name, value) = re.split('\s*:\s*', v, 1)
