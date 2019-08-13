@@ -18,5 +18,5 @@ Current implementation supports only GET and HEAD methods.
 # How to test:
 ```python -m unittest tests/integration/test_*.py``` to run integration tests.
 ## Warning:
-For integration tests server must be run by separate process and listen to port: 80. Also httptest dir must be present in document root. See https://github.com/s-stupnikov/http-test-suite
+For integration tests server must be run by separate process and listen to port: 8080. Also httptest dir must be present in document root. See https://github.com/s-stupnikov/http-test-suite
 ```python -m unittest tests/unit/test_*.py``` to run unit tests.
