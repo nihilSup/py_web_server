@@ -11,7 +11,7 @@ def main():
     logging.basicConfig(filename=args.log, level=logging.INFO,
                         format='[%(asctime)s] %(levelname).1s %(message)s',
                         datefmt='%Y.%m.%d %H:%M:%S')
-    server = HTTPServer('localhost', args.port)
+    server = HTTPServer(args.host, args.port)
     server.add_handler('/', 'GET', build_file_handler(args.root))
     server.add_handler('/', 'HEAD', build_file_handler(args.root))
     server.add_handler('/', 'POST', method_not_allowed)
