@@ -96,11 +96,8 @@ class Request(typing.NamedTuple):
         req_line = line.rstrip('\r\n')
         try:
             meth, path_query, vers = req_line.split(' ')
-            path_query = urllib.parse.unquote(path_query)
-            if '?' in path_query:
-                path, query = path_query.split('?')
-            else:
-                path = path_query
+            parsed = urllib.parse.urlparse(path_query)
+            path = urllib.parse.unquote(parsed.path)
         except ValueError:
             raise ValueError(f'Malformed request line: {req_line}')
         return meth, path, vers
