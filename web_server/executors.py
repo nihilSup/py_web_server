@@ -2,7 +2,7 @@ import threading
 import queue
 
 
-class Thread(threading.Thread):
+class QueueWorker(threading.Thread):
 
     def __init__(self, conn_queue):
         super().__init__(daemon=True)
@@ -36,7 +36,7 @@ class ThreadPool(object):
         self.conn_queue = queue.Queue(self.num_workres * 5)
         self.workers = []
         for i in range(self.num_workres):
-            t = Thread(self.conn_queue)
+            t = QueueWorker(self.conn_queue)
             t.start()
             self.workers.append(t)
         return self
@@ -50,3 +50,41 @@ class ThreadPool(object):
 
     def submit(self, func, *args, **kwargs):
         self.conn_queue.put(lambda: func(*args, **kwargs))
+
+
+class WorkerThread(threading.Thread):
+    """
+    Class to use in approach with server socket accept in worker:
+    threads = []
+            for _ in range(10):
+                t = WorkerThread(s_socket, self.handle_client, daemon=True)
+                t.start()
+                threads.append(t)
+            try:
+                for t in threads:
+                    t.join()
+            except KeyboardInterrupt:
+                pass
+
+            for t in threads:
+                t.stop()
+            for t in threads:
+                t.join()
+    """
+
+    def __init__(self, s_socket, handler, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.socket = s_socket
+        self.handler = handler
+        self.enough = False
+
+    def stop(self):
+        self.enough = True
+
+    def run(self):
+        while not self.enough:
+            try:
+                c_socket, c_addr = self.socket.accept()
+            except (OSError, ConnectionAbortedError):
+                continue
+            self.handler(c_socket, c_addr)
