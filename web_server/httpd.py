@@ -1,6 +1,7 @@
 """Main entry point"""
 import argparse
 import logging
+from multiprocessing import Pool
 
 from web_server.server import HTTPServer
 from web_server.handlers import build_file_handler, method_not_allowed
@@ -11,7 +12,7 @@ def main():
     logging.basicConfig(filename=args.log, level=logging.INFO,
                         format='[%(asctime)s] %(levelname).1s %(message)s',
                         datefmt='%Y.%m.%d %H:%M:%S')
-    server = HTTPServer(args.host, args.port)
+    server = HTTPServer(args.host, args.port, workers=args.workers)
     server.add_handler('/', 'GET', build_file_handler(args.root))
     server.add_handler('/', 'HEAD', build_file_handler(args.root))
     server.add_handler('/', 'POST', method_not_allowed)
@@ -28,7 +29,7 @@ def parse_args():
     parser.add_argument('-r', '--root', type=str,
                         default='./tests/integration',
                         help='path to DOCUMENT_ROOT')
-    parser.add_argument('-w', '--workers', type=int, default=1,
+    parser.add_argument('-w', '--workers', type=int, default=10,
                         help='number of workers')
     parser.add_argument("-l", "--log", action="store", default=None,
                         help='path to log file')
