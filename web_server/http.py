@@ -99,7 +99,7 @@ class Request(typing.NamedTuple):
             parsed = urllib.parse.urlparse(path_query)
             path = urllib.parse.unquote(parsed.path)
         except ValueError:
-            raise ValueError(f'Malformed request line: {req_line}')
+            raise ValueError(f'Malformed request line: "{req_line}"')
         return meth, path, vers
 
 
