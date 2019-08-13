@@ -18,12 +18,17 @@ class HTTPServer(object):
     Implementation of basic http server
     """
 
-    def __init__(self, host, port, backlog=5, handlers=None, executor=None):
+    def __init__(self, host, port, backlog=5, handlers=None, executor=None,
+                 workers=None):
         self.host = host
         self.port = port
         self.backlog = backlog
         self.req_handlers = handlers or {}
-        self.executor = executor or ThreadPoolExecutor
+        self.workers = workers
+        if not executor:
+            def executor():
+                return ThreadPoolExecutor(self.workers)
+        self.executor = executor
 
     def add_handler(self, path, meth, handler):
         self.req_handlers[(path, meth)] = handler
@@ -31,9 +36,11 @@ class HTTPServer(object):
     def serve_forever(self):
         with socket.socket() as s_socket:
             s_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
             s_socket.bind((self.host, self.port))
             s_socket.listen(self.backlog)
             log.info(f'Listening on {self.host}:{self.port}')
+            log.info(f'Workers {self.workers}')
 
             with self.executor() as executor:
                 while True:
