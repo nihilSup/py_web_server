@@ -99,11 +99,8 @@ class Request(typing.NamedTuple):
                 line, buff = buff.split(b'\r\n', 1)
                 yield line.decode('ASCII') + '\r\n'
             else:
-                print('before')
                 data = socket.recv(min(cls.LINE_MAX_SIZE - len(buff),
                                        size))
-                print('after')
-                print(repr(data))
                 if not data:
                     break
                 buff += data
