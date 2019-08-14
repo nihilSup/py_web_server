@@ -116,6 +116,8 @@ class ProcWorker(Process):
                     task, args, kwargs = self.task_queue.get(timeout=1)
                 except mp_queue.Empty:
                     continue
+                except KeyboardInterrupt:
+                    break
                 try:
                     pool.submit(task, *args, **kwargs)
                 except Exception as e:
@@ -132,7 +134,7 @@ class ProcessPoolThreaded(object):
         self.queue = Queue(self.num_proc * self.num_thr * 2)
         processes = []
         for _ in range(self.num_proc):
-            p = ProcWorker(self.queue, self.num_thr)
+            p = ProcWorker(self.queue, self.num_thr, daemon=True)
             p.start()
             processes.append(p)
         self.processes = processes
