@@ -17,6 +17,7 @@ Current implementation supports only GET and HEAD methods.
 
 # How to test:
 ```python -m unittest tests/integration/test_*.py``` to run integration tests.
+
 ## Warning:
 For integration tests server must be run by separate process and listen to port: 8080. Also httptest dir must be present in document root. See https://github.com/s-stupnikov/http-test-suite
 ```python -m unittest tests/unit/test_*.py``` to run unit tests.
@@ -43,3 +44,43 @@ Running 1m test @ http://127.0.0.1:8080/httptest/dir2
 Requests/sec:    359.69
 Transfer/sec:     60.77KB
 
+## ab:
+Server Software:        otuserver
+Server Hostname:        127.0.0.1
+Server Port:            8080
+
+Document Path:          /httptest/wikipedia_russia.html
+Document Length:        954824 bytes
+
+Concurrency Level:      100
+Time taken for tests:   62.667 seconds
+Complete requests:      50000
+Failed requests:        16
+   (Connect: 0, Receive: 0, Length: 16, Exceptions: 0)
+Non-2xx responses:      16
+Total transferred:      47737364141 bytes
+HTML transferred:       47730213923 bytes
+Requests per second:    797.87 [#/sec] (mean)
+Time per request:       125.334 [ms] (mean)
+Time per request:       1.253 [ms] (mean, across all concurrent requests)
+Transfer rate:          743905.91 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0   58 297.6      0    7227
+Processing:    -1   43 355.8     14   26786
+Waiting:        0   24 355.1      3   26779
+Total:          0  102 511.0     14   27853
+
+Percentage of the requests served within a certain time (ms)
+  50%     14
+  66%     25
+  75%     36
+  80%     45
+  90%     72
+  95%    195
+  98%   1127
+  99%   1448
+ 100%  27853 (longest request)
+### Warning
+ab tests performed in CentOS docker image under MacOS
