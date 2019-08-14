@@ -9,7 +9,7 @@ from web_server.handlers import build_file_handler, method_not_allowed
 
 def main():
     args = parse_args()
-    logging.basicConfig(filename=args.log, level=logging.INFO,
+    logging.basicConfig(filename=args.log, level=args.loglevel,
                         format='[%(asctime)s] %(levelname).1s %(message)s',
                         datefmt='%Y.%m.%d %H:%M:%S')
     server = HTTPServer(args.host, args.port, workers=args.workers)
@@ -33,6 +33,12 @@ def parse_args():
                         help='number of workers')
     parser.add_argument("-l", "--log", action="store", default=None,
                         help='path to log file')
+    parser.add_argument('-v', '--verbose', action='store_const',
+                        dest='loglevel', const=logging.INFO,
+                        help='set logging level INFO', default=logging.ERROR)
+    parser.add_argument('-d', '--debug', action='store_const',
+                        dest='loglevel', const=logging.DEBUG,
+                        help='set logging level DEBUG')
     return parser.parse_args()
 
 
