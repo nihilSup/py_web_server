@@ -1,12 +1,12 @@
-# About:
+## About:
 Web server implementation, based on ThreadedPoolExecutor. There is also branch with pool of processes with ThreadedPoolExecutor implementation. No usage of http parsing libs, no usage of HTTPBaseServer like libs
 
 By default server serves static files from document root. It is also possible to add custom handlers to specific paths.
 
-# How to use:
+## How to use:
 ```python -m web_server.httpd``` minimal usecase, see Flags section below.
 
-## Flags: 
+### Flags: 
 * `-p, --port` and `-h, --host`, by default will listen to `localhost:8080`
 * `-l, --log` log file path
 * `-r`, `--root` to specify document root
@@ -14,24 +14,24 @@ By default server serves static files from document root. It is also possible to
 * `-v`, `--verbose` sets logging level to INFO (default ERROR)
 * `-d`, `--debug` sets logging level to DEBUG
 
-# Warning:
+## Warning:
 Current implementation supports only GET and HEAD methods.
 
-# How to test:
+## How to test:
 ```python -m unittest tests/integration/test_*.py``` to run integration tests.
-
-## Warning:
-For integration tests server must be run by separate process and listen to port: 8080. Also httptest dir must be present in document root. See https://github.com/s-stupnikov/http-test-suite
 ```python -m unittest tests/unit/test_*.py``` to run unit tests.
 
-# TODO:
+### Warning:
+For integration tests server must be run by separate process and listen to port: 8080. Also httptest dir must be present in document root. See https://github.com/s-stupnikov/http-test-suite
+
+## TODO:
 * Add asyncio implementation
 * Add POST, PUT support
 * Add WSGI
 * Improve performance
 
-# Performance testing
-## wrk:
+## Performance testing
+### wrk:
 Running 10s test @ http://127.0.0.1:8080/httptest/dir2
   12 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -52,7 +52,7 @@ Running 1m test @ http://127.0.0.1:8080/httptest/dir2
 Requests/sec:    359.69
 Transfer/sec:     60.77KB
 
-## ab:
+### ab:
 Server Software:        otuserver
 Server Hostname:        127.0.0.1
 Server Port:            8080
@@ -90,5 +90,5 @@ Percentage of the requests served within a certain time (ms)
   98%   1127
   99%   1448
  100%  27853 (longest request)
-### Warning
+#### Warning
 ab tests performed in CentOS docker image under MacOS
