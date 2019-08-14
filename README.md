@@ -1,5 +1,5 @@
 # About:
-Web server implementation. No usage of http parsing libs, no usage of HTTPBaseServer like libs
+Web server implementation, based on ThreadedPoolExecutor. There is also branch with pool of processes with ThreadedPoolExecutor implementation. No usage of http parsing libs, no usage of HTTPBaseServer like libs
 
 By default server serves static files from document root. It is also possible to add custom handlers to specific paths.
 
@@ -21,6 +21,12 @@ Current implementation supports only GET and HEAD methods.
 ## Warning:
 For integration tests server must be run by separate process and listen to port: 8080. Also httptest dir must be present in document root. See https://github.com/s-stupnikov/http-test-suite
 ```python -m unittest tests/unit/test_*.py``` to run unit tests.
+
+# TODO:
+* Add asyncio implementation
+* Add POST, PUT support
+* Add WSGI
+* Improve performance
 
 # Performance testing
 ## wrk:
