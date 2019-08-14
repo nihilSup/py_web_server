@@ -105,7 +105,7 @@ class Request(typing.NamedTuple):
                     break
                 buff += data
         if buff:
-            return buff.decode('ASCII')
+            return buff
 
     @classmethod
     def from_socket(cls, socket):
