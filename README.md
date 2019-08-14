@@ -18,8 +18,14 @@ By default server serves static files from document root. It is also possible to
 Current implementation supports only GET and HEAD methods.
 
 ## How to test:
-```python -m unittest tests/integration/test_*.py``` to run integration tests.
-```python -m unittest tests/unit/test_*.py``` to run unit tests.
+```python
+python -m unittest tests/integration/test_*.py
+``` 
+to run integration tests.
+```python
+python -m unittest tests/unit/test_*.py
+``` 
+to run unit tests.
 
 ### Warning:
 For integration tests server must be run by separate process and listen to port: 8080. Also httptest dir must be present in document root. See https://github.com/s-stupnikov/http-test-suite
@@ -32,6 +38,7 @@ For integration tests server must be run by separate process and listen to port:
 
 ## Performance testing
 ### wrk:
+```
 Running 10s test @ http://127.0.0.1:8080/httptest/dir2
   12 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
@@ -51,8 +58,10 @@ Running 1m test @ http://127.0.0.1:8080/httptest/dir2
   Socket errors: connect 50, read 733, write 49, timeout 0
 Requests/sec:    359.69
 Transfer/sec:     60.77KB
+```
 
 ### ab:
+```
 Server Software:        otuserver
 Server Hostname:        127.0.0.1
 Server Port:            8080
@@ -90,5 +99,6 @@ Percentage of the requests served within a certain time (ms)
   98%   1127
   99%   1448
  100%  27853 (longest request)
+ ```
 #### Warning
 ab tests performed in CentOS docker image under MacOS
