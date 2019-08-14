@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from web_server.http import (Request, Response, NOT_FOUND, BAD_REQUEST,
                              INTERNAL_ERROR)
 from web_server.handlers import build_file_handler, method_not_allowed
+from web_server.executors import ProcessPoolThreaded
 
 log = logging.getLogger(__name__)
 
@@ -26,9 +27,11 @@ class HTTPServer(object):
         self.req_handlers = handlers or {}
         self.workers = workers
         if not executor:
-            def executor():
-                return ThreadPoolExecutor(self.workers)
+            executor = self.default_executor
         self.executor = executor
+
+    def default_executor(self):
+        return ThreadPoolExecutor(self.workers)
 
     def add_handler(self, path, meth, handler):
         self.req_handlers[(path, meth)] = handler
@@ -42,7 +45,7 @@ class HTTPServer(object):
             log.info(f'Listening on {self.host}:{self.port}')
             log.info(f'Workers {self.workers}')
 
-            with self.executor() as executor:
+            with ProcessPoolThreaded() as executor:
                 while True:
                     try:
                         c_socket, c_addr = s_socket.accept()
@@ -65,6 +68,7 @@ class HTTPServer(object):
                 for (path, meth), handler in self.req_handlers.items():
                     if request.path.startswith(path) and request.method == meth:
                         try:
+                            log.debug('Handling request')
                             response = handler(request)
                         except Exception as e:
                             log.exception(e)

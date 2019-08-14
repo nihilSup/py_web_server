@@ -6,11 +6,14 @@ import logging
 from web_server import http
 
 
-def build_file_handler(root_path, server='otuserver'):
-    if root_path.startswith('.'):
-        root_path = os.path.abspath(root_path)
+class build_file_handler(object):
+    def __init__(self, root_path):
+        if root_path.startswith('.'):
+            root_path = os.path.abspath(root_path)
+        self.root_path = root_path
 
-    def file_handler(request):
+    def __call__(self, request):
+        root_path = self.root_path
         path = os.path.join(root_path, request.path.lstrip('/'))
         path = os.path.abspath(path)
         if not path.startswith(root_path):
@@ -30,12 +33,10 @@ def build_file_handler(root_path, server='otuserver'):
             else:
                 r = http.Response(http.OK, body=f)
             (r.headers.add('Content-Length', content_len)
-                      .add('Content-Type', content_type))
+                        .add('Content-Type', content_type))
         else:
             raise ValueError('Only GET/HEAD methods supported')
         return r
-
-    return file_handler
 
 
 def method_not_allowed(request):

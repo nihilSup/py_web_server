@@ -1,6 +1,14 @@
 import threading
 import queue
 
+import multiprocessing.queues as mp_queue
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing import Process, cpu_count, Queue
+
+import logging
+
+log = logging.getLogger(__name__)
+
 
 class QueueWorker(threading.Thread):
 
@@ -88,3 +96,54 @@ class WorkerThread(threading.Thread):
             except (OSError, ConnectionAbortedError):
                 continue
             self.handler(c_socket, c_addr)
+
+
+class ProcWorker(Process):
+
+    def __init__(self, task_queue, num_thr=10, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.task_queue = task_queue
+        self.num_thr = num_thr
+        self.enough = False
+
+    def stop(self):
+        self.enough = True
+
+    def run(self):
+        with ThreadPoolExecutor(self.num_thr) as pool:
+            while not self.enough:
+                try:
+                    task, args, kwargs = self.task_queue.get(timeout=1)
+                except mp_queue.Empty:
+                    continue
+                try:
+                    pool.submit(task, *args, **kwargs)
+                except Exception as e:
+                    log.exception(e)
+                    continue
+
+
+class ProcessPoolThreaded(object):
+    def __init__(self, num_proc=None, num_thr=None):
+        self.num_proc = num_proc or cpu_count()
+        self.num_thr = num_thr or 10
+
+    def __enter__(self):
+        self.queue = Queue(self.num_proc * self.num_thr * 2)
+        processes = []
+        for _ in range(self.num_proc):
+            p = ProcWorker(self.queue, self.num_thr)
+            p.start()
+            processes.append(p)
+        self.processes = processes
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        for p in self.processes:
+            p.stop()
+        for p in self.processes:
+            p.join(timeout=30)
+        return False if exc_type else True
+
+    def submit(self, func, *args, **kwargs):
+        self.queue.put((func, args, kwargs))
