@@ -72,6 +72,7 @@ class Request(typing.NamedTuple):
     headers: Headers
 
     LINE_MAX_SIZE = 10*1024
+    RECV_SIZE = 4096
 
     @classmethod
     def _read_line(cls, rb_file):
@@ -81,13 +82,46 @@ class Request(typing.NamedTuple):
         return line.decode('ASCII')
 
     @classmethod
-    def from_socket(cls, socket):
+    def lines_from_socket_file(cls, socket):
+        """Utility generator in file like handling"""
         with socket.makefile('rb') as rb_file:
-            line = cls._read_line(rb_file)
-            meth, path, vers = cls._parse_request_line(line)
-            headers = Headers.from_lines(cls._read_line(rb_file)
-                                         for _ in it.count())
-            return cls(meth, path, vers, headers)
+            while True:
+                yield cls._read_line(rb_file)
+
+    @classmethod
+    def lines_from_socket(cls, socket):
+        buff = b''
+        size = min(cls.LINE_MAX_SIZE, cls.RECV_SIZE)
+        while True:
+            if len(buff) > cls.LINE_MAX_SIZE:
+                raise ValueError('Line is too long')
+            elif b'\r\n' in buff:
+                line, buff = buff.split(b'\r\n', 1)
+                yield line.decode('ASCII') + '\r\n'
+            else:
+                print('before')
+                data = socket.recv(min(cls.LINE_MAX_SIZE - len(buff),
+                                       size))
+                print('after')
+                print(repr(data))
+                if not data:
+                    break
+                buff += data
+        if buff:
+            return buff.decode('ASCII')
+
+    @classmethod
+    def from_socket(cls, socket):
+        lines = cls.lines_from_socket(socket)
+        try:
+            line = next(lines)
+        except StopIteration:
+            raise ValueError('Empty request line')
+        print('Request line', line)
+        meth, path, vers = cls._parse_request_line(line)
+        headers = Headers.from_lines(lines)
+        lines.close()
+        return cls(meth, path, vers, headers)
 
     @classmethod
     def _parse_request_line(cls, line):
@@ -129,10 +163,12 @@ class Response(object):
             socket.sendfile(self.body)
             self.body.close()
 
-    def __repr__(self):
-        return (f'{self.__class__.__name__}' +
-                f'(status={self.status}, headers={self.headers}, ' +
-                f'body={reprlib.repr(self.body)})')
+    def __str__(self):
+        return '\n'.join([
+             f'{self.status}',
+             f'{self.headers}',
+             f'{reprlib.repr(self.body)})'
+        ])
 
 OK = '200 OK'
 BAD_REQUEST = '400 Bad Request'

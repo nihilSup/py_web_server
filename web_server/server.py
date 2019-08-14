@@ -74,5 +74,5 @@ class HTTPServer(object):
                 else:
                     log.info(f'No handlers for {path}')
                     response = Response(NOT_FOUND, body='Not Found')
-                log.info(f'Succesfully created {response}')
+                log.info(f'Created response:\n{response}')
                 response.send(c_socket)

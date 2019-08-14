@@ -1,6 +1,7 @@
 import os
 import mimetypes
 from email.utils import formatdate
+import logging
 
 from web_server import http
 
@@ -16,23 +17,23 @@ def build_file_handler(root_path, server='otuserver'):
             return http.Response(http.FORBIDDEN, body='Forbidden')
         if os.path.isdir(path):
             path = os.path.join(path, 'index.html')
-        try:
-            if request.method in {'GET', 'HEAD'}:
+        if request.method in {'GET', 'HEAD'}:
+            try:
                 f = open(path, 'rb')
-                content_type, encoding = mimetypes.guess_type(path)
-                content_len = os.fstat(f.fileno()).st_size
-                if request.method == 'HEAD':
-                    f.close()
-                    r = http.Response(http.OK, body=None)
-                else:
-                    r = http.Response(http.OK, body=f)
-                (r.headers.add('Content-Length', content_len)
-                          .add('Content-Type', content_type))
+            except FileNotFoundError:
+                return http.Response(http.NOT_FOUND, body='Not found')
+            content_type, encoding = mimetypes.guess_type(path)
+            content_len = os.fstat(f.fileno()).st_size
+            if request.method == 'HEAD':
+                f.close()
+                r = http.Response(http.OK, body=None)
             else:
-                raise ValueError('Only GET/HEAD methods supported')
-            return r
-        except FileNotFoundError:
-            return http.Response(http.NOT_FOUND, body='Not found')
+                r = http.Response(http.OK, body=f)
+            (r.headers.add('Content-Length', content_len)
+                      .add('Content-Type', content_type))
+        else:
+            raise ValueError('Only GET/HEAD methods supported')
+        return r
 
     return file_handler
 
