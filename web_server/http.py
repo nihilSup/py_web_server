@@ -114,7 +114,6 @@ class Request(typing.NamedTuple):
             line = next(lines)
         except StopIteration:
             raise ValueError('Empty request line')
-        print('Request line', line)
         meth, path, vers = cls._parse_request_line(line)
         headers = Headers.from_lines(lines)
         lines.close()
