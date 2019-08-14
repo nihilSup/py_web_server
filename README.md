@@ -101,4 +101,4 @@ Percentage of the requests served within a certain time (ms)
  100%  27853 (longest request)
  ```
 #### Warning
-ab tests performed in CentOS docker image under MacOS
+ab tests were performed in CentOS docker image under MacOS
