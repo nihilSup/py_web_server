@@ -1,6 +1,6 @@
 import unittest
 
-from web_server.server import ThreadPool
+from web_server.executors import ThreadPool
 
 
 class TestPool(unittest.TestCase):

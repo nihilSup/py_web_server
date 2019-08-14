@@ -37,7 +37,7 @@ class Headers(object):
     def from_lines(cls, lines):
         headers = cls()
         for line in it.islice(lines, cls.MAX_HEADERS_NUM):
-            if line in ('\r\n', '\n', ''):
+            if line == '\r\n':
                 break
             try:
                 name, _, value = line.partition(':')

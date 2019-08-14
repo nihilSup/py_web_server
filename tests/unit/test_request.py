@@ -42,7 +42,7 @@ class TestHeaders(unittest.TestCase):
             http.Headers.from_lines(lines*times)
 
     def test_from_lines_valid(self):
-        lines = """a:b\r\nc:d\r\n\r\n""".split('\r\n')
+        lines = ['a:b\r\n', 'c:d\r\n', '\r\n']
         r = http.Headers.from_lines(lines)
         self.assertEqual([r.get(k) for k in 'ac'], ['b', 'd'])
 
