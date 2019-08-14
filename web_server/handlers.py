@@ -6,7 +6,7 @@ import logging
 from web_server import http
 
 
-def build_file_handler(root_path, server='otuserver'):
+def build_file_handler(root_path):
     if root_path.startswith('.'):
         root_path = os.path.abspath(root_path)
 
