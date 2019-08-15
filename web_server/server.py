@@ -18,11 +18,12 @@ class HTTPServer(object):
     Implementation of basic http server
     """
 
-    def __init__(self, host, port, backlog=5, handlers=None, executor=None,
-                 workers=None):
+    def __init__(self, host, port, backlog=5, sock_timeout=2, handlers=None,
+                 executor=None, workers=None):
         self.host = host
         self.port = port
         self.backlog = backlog
+        self.sock_timeout = sock_timeout
         self.req_handlers = handlers or {}
         self.workers = workers
         if not executor:
@@ -43,12 +44,14 @@ class HTTPServer(object):
             log.info(f'Workers {self.workers}')
 
             with self.executor() as executor:
+                handle_client = self.handle_client
+                s_timeout = self.sock_timeout
                 while True:
                     try:
                         c_socket, c_addr = s_socket.accept()
-                        c_socket.settimeout(5)
+                        c_socket.settimeout(s_timeout)
                         log.info(f'Received connection from {c_addr}')
-                        executor.submit(self.handle_client, c_socket, c_addr)
+                        executor.submit(handle_client, c_socket, c_addr)
                     except KeyboardInterrupt:
                         break
 
