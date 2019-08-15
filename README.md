@@ -120,3 +120,8 @@ Percentage of the requests served within a certain time (ms)
  ```
 
 ### NB: ab tests were performed in CentOS docker image under MacOS
+
+## References
+
+<https://defn.io/tags/web-app-from-scratch/>
+<https://dementiy.github.io/2017/11/22/08-async-server/>
