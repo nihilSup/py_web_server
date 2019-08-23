@@ -88,3 +88,8 @@ class WorkerThread(threading.Thread):
             except (OSError, ConnectionAbortedError):
                 continue
             self.handler(c_socket, c_addr)
+
+
+class DummyThreadPool(dummy.Pool):
+    def submit(self, func, *args, **kwargs):
+        return super().apply_async(func, args, kwargs)

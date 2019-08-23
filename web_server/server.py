@@ -5,6 +5,7 @@ import mimetypes
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
+from multiprocessing.dummy import Pool
 
 from web_server.http import (Request, Response, NOT_FOUND, BAD_REQUEST,
                              INTERNAL_ERROR)
@@ -27,7 +28,7 @@ class HTTPServer(object):
         self.req_handlers = handlers or {}
         self.workers = workers
         if not executor:
-            executor = ThreadPoolExecutor(max_workers=workers)
+            executor = Pool(workers)
         self.executor = executor
 
     def add_handler(self, path, meth, handler):
@@ -50,7 +51,7 @@ class HTTPServer(object):
                         c_socket, c_addr = s_socket.accept()
                         c_socket.settimeout(s_timeout)
                         log.info(f'Received connection from {c_addr}')
-                        executor.submit(handle_client, c_socket, c_addr)
+                        executor.apply_async(handle_client, (c_socket, c_addr))
                     except KeyboardInterrupt:
                         break
 
