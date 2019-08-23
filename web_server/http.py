@@ -119,8 +119,8 @@ class Request(typing.NamedTuple):
         lines.close()
         return cls(meth, path, vers, headers)
 
-    @classmethod
-    def _parse_request_line(cls, line):
+    @staticmethod
+    def _parse_request_line(line):
         if not line:
             raise ValueError('Empty request line')
         req_line = line.rstrip('\r\n')
