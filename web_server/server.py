@@ -27,8 +27,7 @@ class HTTPServer(object):
         self.req_handlers = handlers or {}
         self.workers = workers
         if not executor:
-            def executor():
-                return ThreadPoolExecutor(self.workers)
+            executor = ThreadPoolExecutor(max_workers=workers)
         self.executor = executor
 
     def add_handler(self, path, meth, handler):
@@ -43,7 +42,7 @@ class HTTPServer(object):
             log.info(f'Listening on {self.host}:{self.port}')
             log.info(f'Workers {self.workers}')
 
-            with self.executor() as executor:
+            with self.executor as executor:
                 handle_client = self.handle_client
                 s_timeout = self.sock_timeout
                 while True:
